@@ -1,0 +1,43 @@
+version: '3.8'
+services:
+    db:
+      container_name: postgresql
+      image: postgres
+      restart: always
+      environment:
+        POSTGRES_PASSWORD: "${PGPASSWORD:-root}"
+        POSTGRES_USER: "${PGUSER:-postgres}"
+        POSTGRES_DB: "${PGDATABASE:-postgres}"
+      ports:
+        - "${PGPORT:-5432}:5432"
+      networks:
+        - apinet
+    adminer:
+      container_name: adminer
+      image: adminer
+      restart: always
+      environment:
+        ADMINER_PASSWORD: "${ADMINER_PASSWORD:-admin}"
+      ports:
+        - "${ADMINER_PORT:-8080}:8080"
+      depends_on:
+        - db
+      networks:
+        - apinet
+    nodejs:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      container_name: nodejs
+      volumes:
+        - ./:/usr/src/app
+      ports:
+        - "5000:3000"
+      depends_on:
+        - db
+      command: npm run start-dev
+      networks:
+        - apinet
+networks:
+  apinet:
+    driver: bridge
