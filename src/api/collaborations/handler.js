@@ -1,7 +1,7 @@
 class CollaborationHandler {
   constructor(collaborationsService, playlistsService, validator) {
     this._collaborationsService = collaborationsService;
-    this._playlistsService = playlistsService;
+    this._playlistService = playlistsService;
     this._validator = validator;
 
     this.postCollaborationHandler = this.postCollaboration.bind(this);
@@ -13,7 +13,8 @@ class CollaborationHandler {
     const { id: credentialId } = req.auth.credentials;
     const { playlistId, userId } = req.payload;
 
-    await this._playlistsService.verifyPlaylistUser(playlistId, credentialId);
+    await this._playlistService.verifyPlaylistOwner(playlistId, credentialId);
+
     const collaborationId = await this._collaborationsService.addCollaboration(
       playlistId,
       userId
@@ -35,7 +36,8 @@ class CollaborationHandler {
     const { id: credentialId } = req.auth.credentials;
     const { playlistId, userId } = req.payload;
 
-    await this._playlistsService.verifyPlaylistUser(playlistId, credentialId);
+    await this._playlistService.verifyPlaylistOwner(playlistId, credentialId);
+
     await this._collaborationsService.deleteCollaboration(playlistId, userId);
 
     return h.response({

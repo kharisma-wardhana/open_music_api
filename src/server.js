@@ -112,6 +112,7 @@ const init = async () => {
       options: {
         playlistService,
         playlistSongService,
+        collaborationService,
         validator: PlaylistSongValidator,
       },
     },
@@ -135,6 +136,10 @@ const init = async () => {
       });
       newResponse.code(response.statusCode);
       return newResponse;
+    }
+
+    if (response instanceof Error) {
+      console.log(response);
     }
 
     return response.continue || response;

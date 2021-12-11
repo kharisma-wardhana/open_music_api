@@ -1,15 +1,15 @@
 const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
+const AuthorizationError = require('../../exceptions/AuthorizationError');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
-const AuthorizationError = require('../../exceptions/AuthorizationError');
 
 class PlaylistService {
   constructor() {
     this._pool = new Pool();
   }
 
-  async verifyPlaylistUser(playlistId, userId) {
+  async verifyPlaylistOwner(playlistId, userId) {
     const query = {
       text: 'SELECT user_id FROM playlists WHERE id = $1',
       values: [playlistId],
@@ -18,36 +18,22 @@ class PlaylistService {
     if (!rows.length) {
       throw new NotFoundError('Playlist not found');
     }
-
-    if (rows[0].userId !== userId) {
-      throw new AuthorizationError('Unauthorized to access playlist');
+    const playlistUserId = rows[0].user_id;
+    if (playlistUserId !== userId) {
+      throw new AuthorizationError('Unauthorized access');
     }
   }
 
   async getPlaylists(userId) {
     const query = {
-      text: `SELECT playlists.id, playlists.name, users.username AS username 
-      FROM playlists LEFT JOIN users ON playlists.user_id = users.id 
-      WHERE playlists.user_id = $1`,
+      text: `SELECT playlists.id, playlists.name, users.username 
+      FROM playlists LEFT JOIN users ON playlists.user_id = users.id
+      LEFT JOIN collaborations ON playlists.id = collaborations.playlist_id 
+      WHERE playlists.user_id = $1 OR collaborations.user_id = $1`,
       values: [userId],
     };
     const { rows } = await this._pool.query(query);
-    if (!rows.length) {
-      throw new NotFoundError('User does not have playlists');
-    }
     return rows;
-  }
-
-  async getPlaylist(id) {
-    const query = {
-      text: 'SELECT id,user_id,name FROM playlists WHERE id = $1',
-      values: [id],
-    };
-    const { rows } = await this._pool.query(query);
-    if (!rows.length) {
-      throw new NotFoundError('Playlist not found');
-    }
-    return rows[0];
   }
 
   async createPlaylist(playlist) {

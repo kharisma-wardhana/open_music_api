@@ -10,7 +10,7 @@ class PlaylistSongService {
 
   async getSongInPlaylist(playlistId) {
     const query = {
-      text: `SELECT songs.* FROM songs 
+      text: `SELECT songs.id, songs.title, songs.performer FROM songs 
       LEFT JOIN playlistsongs ON songs.id = playlistsongs.song_id 
       WHERE playlistsongs.playlist_id = $1`,
       values: [playlistId],
@@ -42,7 +42,7 @@ class PlaylistSongService {
     };
     const { rowCount } = await this._pool.query(query);
     if (!rowCount) {
-      throw new NotFoundError('Song not found in playlist');
+      throw new InvariantError('Unable to remove song from playlist');
     }
     return rowCount;
   }

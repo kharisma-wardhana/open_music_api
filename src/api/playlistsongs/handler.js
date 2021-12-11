@@ -1,7 +1,15 @@
+const NotFoundError = require('../../exceptions/NotFoundError');
+
 class PlaylistSongsHandler {
-  constructor(playlistService, playlistSongService, validator) {
+  constructor(
+    playlistService,
+    playlistSongService,
+    collaborationService,
+    validator
+  ) {
     this._playlistService = playlistService;
     this._playlistSongService = playlistSongService;
+    this._collaborationService = collaborationService;
     this._validator = validator;
 
     this.addSongToPlaylistHandler = this.addSongToPlaylist.bind(this);
@@ -10,16 +18,17 @@ class PlaylistSongsHandler {
   }
 
   async addSongToPlaylist(req, h) {
-    const { id: playlistId } = req.params;
-    const { id: songId } = req.payload;
+    const { playlistId } = req.params;
+    const { songId } = req.payload;
     const { id: userId } = req.auth.credentials;
 
-    await this._playlistService.verifyPlaylistUser(playlistId, userId);
+    await this.validateAccess(playlistId, userId);
 
     const playlistSong = await this._playlistSongService.addSongToPlaylist(
       playlistId,
       songId
     );
+
     return h
       .response({
         status: 'success',
@@ -30,29 +39,59 @@ class PlaylistSongsHandler {
   }
 
   async getSongInPlaylist(req, h) {
-    const { id: playlistId } = req.params;
+    const { playlistId } = req.params;
+    const { id: userId } = req.auth.credentials;
+
+    await this.validateAccess(playlistId, userId);
+
     const playlistSong = await this._playlistSongService.getSongInPlaylist(
       playlistId
     );
+
     return h.response({
       status: 'success',
       message: 'Song retrieved successfully',
-      data: playlistSong,
+      data: {
+        songs: playlistSong,
+      },
     });
   }
 
   async removeSongFromPlaylist(req, h) {
-    const { id: playlistId } = req.params;
-    const { id: songId } = req.payload;
+    const { playlistId } = req.params;
+    const { songId } = req.payload;
+    const { id: userId } = req.auth.credentials;
+
+    await this.validateAccess(playlistId, userId);
+
     const deleteId = await this._playlistSongService.removeSongFromPlaylist(
       playlistId,
       songId
     );
+
     return h.response({
       status: 'success',
       message: 'Song deleted successfully',
       data: deleteId,
     });
+  }
+
+  async validateAccess(playlistId, userId) {
+    try {
+      await this._playlistService.verifyPlaylistOwner(playlistId, userId);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+      try {
+        await this._collaborationService.verifyCollaboration(
+          playlistId,
+          userId
+        );
+      } catch {
+        throw error;
+      }
+    }
   }
 }
 
