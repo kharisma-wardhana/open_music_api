@@ -1,0 +1,30 @@
+{
+  "name": "notification_app",
+  "version": "1.0.0",
+  "description": "Notification App for Open Music",
+  "main": "index.js",
+  "scripts": {
+    "start-dev": "nodemon --legacy-watch ./src/index.js",
+    "lint": "eslint ./src"
+  },
+  "keywords": [
+    "MessageBroker",
+    "Nodemailer",
+    "PostgreSQL"
+  ],
+  "author": "KharismaWardhana",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.8.0",
+    "dotenv": "^10.0.0",
+    "nodemailer": "^6.7.2",
+    "pg": "^8.7.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.4.1",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.25.3",
+    "nodemon": "^2.0.15"
+  }
+}

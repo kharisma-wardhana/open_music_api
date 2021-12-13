@@ -1,6 +1,7 @@
-.vscode
-node_modules
-node_modules/*
+pgdata
+redisdata
+rabbitmqdata
 
 .env
-OpenMusicPostgreSQL.session.sql
+OpenMusic API*.json
+OpenMusicPostgreSQL*.sql
