@@ -40,11 +40,13 @@ services:
         - "${REDIS_DATA:-./redisdata}:/data"
       networks:
         - apinet
+
     mailhog:
       image: mailhog/mailhog:latest
       ports:
         - "{$MAILHOG_SMTP_PORT:-1025}:1025"
         - "{$MAILHOG_WEB_PORT:-8025}:8025"
+
     app:
       build:
         context: ./open_music_api

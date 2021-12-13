@@ -1,4 +1,16 @@
-## HOW TO COMPILE:
+## Open Music API
+
+Open Music API untuk belajar fundamental backend
+
+### Tech:
+
+- NodeJS
+- Hapi
+- Redis
+- RabbitMQ
+- PostgreSQL
+
+### How to compile:
 
 - copy file .env-example ke .env file
 
@@ -17,18 +29,4 @@ npm run migrate up
 
 ```bash
 npm run start-dev
-```
-
-## HOW TO USE DOCKER:
-
-- copy file .env-example ke .env file
-
-```bash
-cp .env-example .env
-```
-
-- menggunakan docker compose
-
-```bash
-docker compose up -d
 ```
