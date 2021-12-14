@@ -1,6 +1,5 @@
 class NotifListener {
-  constructor(songService, mailSender) {
-    this._songService = songService;
+  constructor(mailSender) {
     this._mailSender = mailSender;
 
     this.sendNotif = this.sendNotif.bind(this);
@@ -8,9 +7,8 @@ class NotifListener {
 
   async sendNotif(message) {
     try {
-      const { userId, targetEmail } = JSON.parse(message.content.toString());
-
-      const songs = await this._songService.getAllSongByUserId(userId);
+      const { targetEmail, songs } = JSON.parse(message.content.toString());
+      console.log(`Received songs data : ${songs}`);
       const result = await this._mailSender.sendEmail(
         targetEmail,
         JSON.stringify(songs)

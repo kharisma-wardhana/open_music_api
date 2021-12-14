@@ -5,29 +5,45 @@ const { detailSongMapper } = require('../../utils/mappers/DetailSongMapper');
 const InvariantError = require('../../exceptions/InvariantError');
 
 class SongsService {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool();
+    this._cacheService = cacheService;
   }
 
   async getAllSong() {
-    const query = 'SELECT id,title,performer FROM songs';
-    const { rows } = await this._pool.query(query);
-    if (!rows.length) {
-      throw new NotFoundError('Empty songs');
+    try {
+      const cacheData = await this._cacheService.get(`songs:all`);
+      return JSON.parse(cacheData);
+    } catch {
+      const query = 'SELECT id,title,performer FROM songs';
+      const { rows } = await this._pool.query(query);
+      if (!rows.length) {
+        throw new NotFoundError('Empty songs');
+      }
+      await this._cacheService.set(`songs:all`, JSON.stringify(rows));
+      return rows;
     }
-    return rows;
   }
 
   async getSongById(id) {
-    const query = {
-      text: 'SELECT * FROM songs WHERE id = $1',
-      values: [id],
-    };
-    const { rows } = await this._pool.query(query);
-    if (!rows.length) {
-      throw new NotFoundError(`Song with id ${id} not found`);
+    try {
+      const cacheData = await this._cacheService.get(`songs:${id}`);
+      return JSON.parse(cacheData);
+    } catch {
+      const query = {
+        text: 'SELECT * FROM songs WHERE id = $1',
+        values: [id],
+      };
+      const { rows } = await this._pool.query(query);
+      if (!rows.length) {
+        throw new NotFoundError(`Song with id ${id} not found`);
+      }
+      await this._cacheService.set(
+        `songs:${id}`,
+        JSON.stringify(rows.map(detailSongMapper))
+      );
+      return rows.map(detailSongMapper)[0];
     }
-    return rows.map(detailSongMapper)[0];
   }
 
   async createSong(song) {
@@ -51,6 +67,7 @@ class SongsService {
     if (!rows[0].id) {
       throw new InvariantError('Song not created');
     }
+    await this._cacheService.delete(`songs:${id}`);
     return rows[0].id;
   }
 
@@ -72,6 +89,7 @@ class SongsService {
     if (!rows.length) {
       throw new NotFoundError(`Song with id ${id} not found`);
     }
+    await this._cacheService.delete(`songs:${id}`);
     return rows[0].id;
   }
 
@@ -84,6 +102,7 @@ class SongsService {
     if (!rowCount) {
       throw new NotFoundError(`Song with id ${id} not found`);
     }
+    await this._cacheService.delete(`songs:${id}`);
     return rowCount;
   }
 }

@@ -56,7 +56,7 @@ const init = async () => {
   const authService = new AuthService();
   const userService = new UserService();
   const collaborationService = new CollaborationService();
-  const songsService = new SongService();
+  const songsService = new SongService(cacheService);
   const playlistSongService = new PlaylistSongService(cacheService);
   const playlistService = new PlaylistService(collaborationService);
   const storageService = new StorageService(
@@ -151,6 +151,7 @@ const init = async () => {
       options: {
         service: SendMessageService,
         playlistService,
+        playlistSongService,
         validator: ExportValidator,
       },
     },
@@ -174,7 +175,6 @@ const init = async () => {
       newResponse.code(response.statusCode);
       return newResponse;
     }
-
     return response.continue || response;
   });
 
