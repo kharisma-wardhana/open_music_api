@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const InvariantError = require('../../exceptions/InvariantError');
 
 class SongService {
   constructor() {
@@ -14,6 +15,9 @@ class SongService {
       values: [userId],
     };
     const { rows } = await this._pool.query(query);
+    if (!rows.length) {
+      throw new InvariantError('Empty playlist');
+    }
     return rows;
   }
 }
