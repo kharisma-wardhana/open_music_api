@@ -10,21 +10,28 @@ class PlaylistSongService {
   }
 
   async getSongInPlaylist(playlistId) {
-    const query = {
-      text: `SELECT songs.id, songs.title, songs.performer FROM songs 
-      LEFT JOIN playlistsongs ON songs.id = playlistsongs.song_id 
-      WHERE playlistsongs.playlist_id = $1`,
-      values: [playlistId],
-    };
-    const { rows } = await this._pool.query(query);
-    if (!rows.length) {
-      throw new NotFoundError('Empty playlist');
+    try {
+      const cacheData = await this._cacheService.get(
+        `playlistsongs:${playlistId}`
+      );
+      return JSON.parse(cacheData);
+    } catch {
+      const query = {
+        text: `SELECT songs.id, songs.title, songs.performer FROM songs 
+        LEFT JOIN playlistsongs ON songs.id = playlistsongs.song_id 
+        WHERE playlistsongs.playlist_id = $1`,
+        values: [playlistId],
+      };
+      const { rows } = await this._pool.query(query);
+      if (!rows.length) {
+        throw new NotFoundError('Empty playlist');
+      }
+      await this._cacheService.set(
+        `playlistsongs:${playlistId}`,
+        JSON.stringify(rows)
+      );
+      return rows;
     }
-    await this._cacheService.set(
-      `playlistsongs:${playlistId}`,
-      JSON.stringify(rows)
-    );
-    return rows;
   }
 
   async addSongToPlaylist(playlistId, songId) {
