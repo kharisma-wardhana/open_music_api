@@ -21,10 +21,7 @@ class ExportHandler {
       songs,
     };
 
-    await this._service.sendMessage(
-      process.env.NOTIF_QUEUE,
-      JSON.stringify(message)
-    );
+    await this._service.sendMessage('notifications', JSON.stringify(message));
 
     return h
       .response({

@@ -11,9 +11,9 @@ const init = async () => {
   const connection = await amqp.connect(process.env.RABBITMQ_SERVER);
   const channel = await connection.createChannel();
 
-  await channel.assertQueue(process.env.NOTIF_QUEUE, { durable: true });
+  await channel.assertQueue('notifications', { durable: true });
 
-  channel.consume(process.env.NOTIF_QUEUE, notifListener.sendNotif, {
+  channel.consume('notifications', notifListener.sendNotif, {
     noAck: true,
   });
 };
