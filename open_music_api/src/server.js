@@ -55,13 +55,13 @@ const init = async () => {
   const cacheService = new CacheService();
   const authService = new AuthService();
   const userService = new UserService();
-  const collaborationService = new CollaborationService();
   const songsService = new SongService(cacheService);
   const playlistSongService = new PlaylistSongService(cacheService);
+  const collaborationService = new CollaborationService(cacheService);
   const playlistService = new PlaylistService(collaborationService);
-  const storageService = new StorageService(
-    path.resolve(__dirname, 'api/uploads/file/images')
-  );
+
+  const uploadedFolder = path.resolve(__dirname, 'api/uploads/file/images');
+  const storageService = new StorageService(uploadedFolder);
 
   const server = Hapi.server({
     host: process.env.HOST,
